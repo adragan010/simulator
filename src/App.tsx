@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Container, Typography, Box, Button, CircularProgress, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { Container, Typography, Box, Button, CircularProgress, CssBaseline, ThemeProvider, createTheme, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, IconButton } from '@mui/material';
 import { SimulationInputs } from './components/SimulationInputs';
 import { PnLChart } from './components/PnLChart';
 import type { GlobalParams, TraderProfile, SimulationResult, WorkerParams } from './types';
@@ -8,6 +8,7 @@ import SimulationWorker from './workers/simulation.worker?worker';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import InfoIcon from '@mui/icons-material/Info';
 
 const darkTheme = createTheme({
   palette: {
@@ -50,6 +51,7 @@ function App() {
   const [isSimulating, setIsSimulating] = useState(false);
   const [hasSimulated, setHasSimulated] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [openHelp, setOpenHelp] = useState(false);
 
   const runSimulation = useCallback(async () => {
     setIsSimulating(true);
@@ -130,9 +132,17 @@ function App() {
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Typography variant="h3" component="h1" gutterBottom align="center" sx={{ mb: 4, fontWeight: 'bold', background: 'linear-gradient(45deg, #90caf9 30%, #ce93d8 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          PnL Simulator
-        </Typography>
+        <Box sx={{ position: 'relative', mb: 4 }}>
+          <Typography variant="h3" component="h1" align="center" sx={{ fontWeight: 'bold', background: 'linear-gradient(45deg, #90caf9 30%, #ce93d8 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            PnL Simulator
+          </Typography>
+          <IconButton
+            onClick={() => setOpenHelp(true)}
+            sx={{ position: 'absolute', right: 0, top: 0, color: 'primary.main' }}
+          >
+            <InfoIcon />
+          </IconButton>
+        </Box>
 
         {!hasSimulated ? (
           <>
@@ -181,6 +191,36 @@ function App() {
 
         {/* Show chart if we have results (even if simulating, we show partial results) */}
         {results.length > 0 && <PnLChart results={results} />}
+
+        <Dialog open={openHelp} onClose={() => setOpenHelp(false)} maxWidth="md">
+          <DialogTitle>About PnL Simulator</DialogTitle>
+          <DialogContent>
+            <DialogContentText paragraph>
+              The PnL Simulator helps traders visualize the potential outcomes of their strategies by running Monte Carlo simulations. It highlights the role of variance and risk in trading.
+            </DialogContentText>
+            <Typography variant="h6" gutterBottom color="primary">Global Parameters</Typography>
+            <DialogContentText paragraph>
+              • <b>Number of Trades</b>: Total trades to simulate per path.<br />
+              • <b>Initial Equity</b>: Starting account balance.<br />
+              • <b>Aggressive/Passive Commission</b>: Fees for market (aggressive) vs. limit (passive) orders.
+            </DialogContentText>
+            <Typography variant="h6" gutterBottom color="primary">Trader Profile Parameters</Typography>
+            <DialogContentText paragraph>
+              • <b>Number of Paths</b>: How many simulations to run for this profile to see variance.<br />
+              • <b>Risk/Reward Ratio</b>: Potential profit vs. potential loss (e.g., 2.0).<br />
+              • <b>Win Rate</b>: Probability of a winning trade (0-1).<br />
+              • <b>Risk Per Trade</b>: Ticks risked per trade.<br />
+              • <b>Passive Order Rate</b>: % of trades using limit orders.<br />
+              • <b>Slippage</b>: Ticks lost during poor execution.<br />
+              • <b>Slippage Probability</b>: Likelihood of slippage occurring.<br />
+              • <b>Risk Mgmt Error Rate</b>: Probability of failing to cut a loss.<br />
+              • <b>Risk Mgmt Multiplier</b>: How much larger the loss is when an error occurs.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenHelp(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </ThemeProvider>
   );
