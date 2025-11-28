@@ -10,24 +10,9 @@ interface Props {
 }
 
 export const PnLChart: React.FC<Props> = ({ results }) => {
-    const data = useMemo(() => {
-        if (results.length === 0) return [];
+    const { data, profileGroups } = useMemo(() => {
+        if (results.length === 0) return { data: [], profileGroups: new Map() };
 
-        const numTrades = results[0].data.length;
-        const chartData = [];
-
-        for (let i = 0; i < numTrades; i++) {
-            const point: any = { trade: results[0].data[i].tradeNumber };
-            results.forEach((res) => {
-                point[res.traderId] = res.data[i].equity;
-            });
-            chartData.push(point);
-        }
-        return chartData;
-    }, [results]);
-
-    // Group results by profile to assign same color base to all paths from same profile
-    const profileGroups = useMemo(() => {
         const groups = new Map<string, SimulationResult[]>();
         results.forEach(res => {
             if (!groups.has(res.profileId)) {
@@ -35,14 +20,38 @@ export const PnLChart: React.FC<Props> = ({ results }) => {
             }
             groups.get(res.profileId)!.push(res);
         });
-        return groups;
+
+        const numTrades = results[0].data.length;
+        const chartData = [];
+
+        for (let i = 0; i < numTrades; i++) {
+            const point: any = { trade: results[0].data[i].tradeNumber };
+
+            // Individual paths
+            results.forEach((res) => {
+                point[res.traderId] = res.data[i].equity;
+            });
+
+            // Mean paths
+            groups.forEach((groupResults, profileId) => {
+                const totalEquity = groupResults.reduce((sum, res) => sum + res.data[i].equity, 0);
+                point[`${profileId}_mean`] = totalEquity / groupResults.length;
+            });
+
+            chartData.push(point);
+        }
+        return { data: chartData, profileGroups: groups };
     }, [results]);
 
     // Generate colors: same hue for same profile, varied saturation/lightness for different paths
-    const getColor = (result: SimulationResult) => {
+    const getProfileHue = (profileId: string) => {
         const profileIds = Array.from(profileGroups.keys());
-        const profileIndex = profileIds.indexOf(result.profileId);
-        const hue = (profileIndex * 137.508) % 360;
+        const profileIndex = profileIds.indexOf(profileId);
+        return (profileIndex * 137.508) % 360;
+    };
+
+    const getColor = (result: SimulationResult) => {
+        const hue = getProfileHue(result.profileId);
 
         // Find which path this is within the profile
         const profileResults = profileGroups.get(result.profileId) || [];
@@ -50,8 +59,9 @@ export const PnLChart: React.FC<Props> = ({ results }) => {
         const pathCount = profileResults.length;
 
         // Vary opacity/lightness slightly for different paths
-        const lightness = 50 + (pathIndex / Math.max(pathCount - 1, 1)) * 20 - 10;
-        const opacity = 0.5 + (pathIndex / Math.max(pathCount - 1, 1)) * 0.4;
+        // Make individual paths lighter/more transparent to let the mean shine
+        const lightness = 60 + (pathIndex / Math.max(pathCount - 1, 1)) * 20 - 10;
+        const opacity = 0.3 + (pathIndex / Math.max(pathCount - 1, 1)) * 0.3;
 
         return { color: `hsl(${hue}, 70%, ${lightness}%)`, opacity };
     };
@@ -80,6 +90,8 @@ export const PnLChart: React.FC<Props> = ({ results }) => {
                             formatter={(value: number, name: string) => [`$${value.toFixed(2)}`, name]}
                         />
                         {results.length <= 20 && <Legend />}
+
+                        {/* Individual Paths */}
                         {results.map((res) => {
                             const { color, opacity } = getColor(res);
                             return (
@@ -90,8 +102,27 @@ export const PnLChart: React.FC<Props> = ({ results }) => {
                                     name={res.traderId}
                                     stroke={color}
                                     dot={false}
-                                    strokeWidth={1.5}
+                                    strokeWidth={1}
                                     strokeOpacity={opacity}
+                                    isAnimationActive={false}
+                                />
+                            );
+                        })}
+
+                        {/* Mean Lines (Rendered on top) */}
+                        {Array.from(profileGroups.entries()).map(([profileId, groupResults]) => {
+                            const hue = getProfileHue(profileId);
+                            const profileName = groupResults[0].traderId.split(' #')[0];
+                            return (
+                                <Line
+                                    key={`${profileId}_mean`}
+                                    type="monotone"
+                                    dataKey={`${profileId}_mean`}
+                                    name={`${profileName} (Mean)`}
+                                    stroke={`hsl(${hue}, 100%, 40%)`} // Darker, fully saturated
+                                    dot={false}
+                                    strokeWidth={3}
+                                    strokeDasharray="5 5"
                                     isAnimationActive={false}
                                 />
                             );
