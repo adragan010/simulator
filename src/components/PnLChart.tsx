@@ -106,7 +106,7 @@ export const PnLChart: React.FC<Props> = ({ results }) => {
                     Trader Results
                 </Typography>
                 <Stack spacing={2}>
-                    {results.map((result, index) => (
+                    {results.map((result) => (
                         <Box
                             key={result.traderId}
                             sx={{
@@ -126,7 +126,7 @@ export const PnLChart: React.FC<Props> = ({ results }) => {
                                         width: 16,
                                         height: 16,
                                         borderRadius: '50%',
-                                        bgcolor: getColor(index),
+                                        bgcolor: getColor(result),
                                     }}
                                 />
                                 <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
