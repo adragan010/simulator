@@ -33,7 +33,12 @@ self.onmessage = (e: MessageEvent<{ params: WorkerParams; traderId: string; prof
         if (isWin) {
             pnlTicks = riskTakenPerTradeTicks * riskRewardRatio;
         } else {
-            pnlTicks = -riskTakenPerTradeTicks;
+            // Loss case: check for risk management error
+            let currentRisk = riskTakenPerTradeTicks;
+            if (Math.random() < params.riskManagementErrorRate) {
+                currentRisk *= params.riskManagementErrorMultiplier;
+            }
+            pnlTicks = -currentRisk;
         }
 
         // Apply Slippage

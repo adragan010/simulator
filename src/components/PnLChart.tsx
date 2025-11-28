@@ -126,7 +126,7 @@ export const PnLChart: React.FC<Props> = ({ results }) => {
                                         width: 16,
                                         height: 16,
                                         borderRadius: '50%',
-                                        bgcolor: getColor(result),
+                                        bgcolor: getColor(result).color,
                                     }}
                                 />
                                 <Typography variant="body1" sx={{ fontWeight: 'medium' }}>

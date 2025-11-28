@@ -43,6 +43,8 @@ export const SimulationInputs: React.FC<Props> = ({ globalParams, onGlobalChange
             passiveAggressiveRate: 0.5,
             slippage: 1,
             executionSlippageErrorRate: 0.1,
+            riskManagementErrorRate: 0.05,
+            riskManagementErrorMultiplier: 2.0,
         };
         onProfilesChange([...profiles, newProfile]);
     };
@@ -190,6 +192,28 @@ export const SimulationInputs: React.FC<Props> = ({ globalParams, onGlobalChange
                                 inputProps={{ step: 0.01, min: 0, max: 1 }}
                                 value={profile.executionSlippageErrorRate}
                                 onChange={(e) => handleProfileChange(profile.id, 'executionSlippageErrorRate', e.target.value)}
+                            />
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                            <TextField
+                                fullWidth
+                                label="Risk Mgmt Error Rate (0-1)"
+                                type="number"
+                                inputProps={{ step: 0.01, min: 0, max: 1 }}
+                                value={profile.riskManagementErrorRate}
+                                onChange={(e) => handleProfileChange(profile.id, 'riskManagementErrorRate', e.target.value)}
+                                helperText="Prob. of assuming more risk"
+                            />
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                            <TextField
+                                fullWidth
+                                label="Risk Mgmt Multiplier"
+                                type="number"
+                                inputProps={{ step: 0.1, min: 1 }}
+                                value={profile.riskManagementErrorMultiplier}
+                                onChange={(e) => handleProfileChange(profile.id, 'riskManagementErrorMultiplier', e.target.value)}
+                                helperText="Multiplier on loss when error occurs"
                             />
                         </Grid>
                     </Grid>

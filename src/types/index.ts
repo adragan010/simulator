@@ -15,6 +15,8 @@ export interface TraderProfile {
     passiveAggressiveRate: number; // 0-1
     slippage: number;
     executionSlippageErrorRate: number; // 0-1
+    riskManagementErrorRate: number; // 0-1
+    riskManagementErrorMultiplier: number; // > 1
 }
 
 export interface WorkerParams extends GlobalParams, Omit<TraderProfile, 'id' | 'name' | 'pathCount'> { }

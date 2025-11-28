@@ -39,6 +39,8 @@ const defaultProfile: TraderProfile = {
   passiveAggressiveRate: 0.5,
   slippage: 1,
   executionSlippageErrorRate: 0.1,
+  riskManagementErrorRate: 0.05,
+  riskManagementErrorMultiplier: 2.0,
 };
 
 function App() {
@@ -72,6 +74,8 @@ function App() {
             passiveAggressiveRate: profile.passiveAggressiveRate,
             slippage: profile.slippage,
             executionSlippageErrorRate: profile.executionSlippageErrorRate,
+            riskManagementErrorRate: profile.riskManagementErrorRate,
+            riskManagementErrorMultiplier: profile.riskManagementErrorMultiplier,
           }
         });
       }
