@@ -20,6 +20,9 @@ const darkTheme = createTheme({
       default: '#121212',
       paper: '#1e1e1e',
     },
+    error: {
+      main: '#ff9800', // Orange instead of Red
+    },
   },
 });
 

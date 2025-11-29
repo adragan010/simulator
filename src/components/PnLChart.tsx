@@ -47,7 +47,14 @@ export const PnLChart: React.FC<Props> = ({ results }) => {
     const getProfileHue = (profileId: string) => {
         const profileIds = Array.from(profileGroups.keys());
         const profileIndex = profileIds.indexOf(profileId);
-        return (profileIndex * 137.508) % 360;
+        let hue = (profileIndex * 137.508) % 360;
+
+        // Avoid red range (approx 335-360 and 0-25)
+        // If hue is in this range, shift it to avoid red
+        while (hue < 25 || hue > 335) {
+            hue = (hue + 50) % 360;
+        }
+        return hue;
     };
 
     const getColor = (result: SimulationResult) => {
